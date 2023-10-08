@@ -4,7 +4,7 @@
       <!-- Вывод табов -->
       <CategoriesModule :categories="tagsArray" @activate-it="chooseTag" />
 
-      <!-- Показывает количество блоков из 8 фото (убрать после отладки) -->
+      <!-- Показывает количество блоков фото из 8 (убрать после отладки) -->
       <h2>{{ pagiNumbersLength }}</h2>
 
       <div class="cards-module__content">
@@ -38,7 +38,8 @@
             </div>
          </div>
 
-         <CardsPagination :numberOf="pagiNumbersLength" @pagiChoice="choosePagination" />
+         <CardsPagination :numberOf="pagiNumbersLength" :numFirstVisible="numFirstVisible" @pagiChoice="choosePagination"
+            @pagiRight="paginationRight" @pagiLeft="paginationLeft" />
 
       </div>
    </section>
@@ -65,7 +66,8 @@ export default {
          ],
          tagsIndex: 0,
          filteredCardsNumber: 0, // Номер нажатого таба (0 - нет нажатого)
-         chosenPagination: 1,
+         chosenPagination: 1, // Номер нажатой ячейки пагинации
+         numFirstVisible: 1, // Номер самой левой, из видимых, ячейки пагинации
       };
    },
    computed: {
@@ -81,9 +83,11 @@ export default {
          }
          return arr;
       },
+      // Общее количество точек пагинации
       pagiNumbersLength() {
          return Math.ceil(this.filteredCards.length / 8);
       },
+      // Массив 8 карт из отфильтрованных по табу, соответствующих точке пагинации
       paginatedCards() {
          let arr = [];
          if (!this.chosenPagination) {
@@ -93,18 +97,14 @@ export default {
          }
          return arr;
       },
-
-      // Клонируем массив табов для того, чтобы не менять исходный массив при присвоении свойства =active=
-      // cloneTagsArray() {
-      //    const arr = Object.assign([], this.tagsArray);
-      //    return arr;
-      // },
    },
    methods: {
       chooseTag(id) {
          // console.log('id: ', id);
-         // Обнуляем пагинацию
+         // Обнуляем выбранную точку пагинации
          this.chosenPagination = 1;
+         // Обнуляем самую левую видимую точку пагинации
+         this.numFirstVisible = 1;
 
          // Обнуляем активность кнопок выбора табов
          this.tagsArray.forEach((element) => {
@@ -121,10 +121,18 @@ export default {
          }
       },
       choosePagination(pagiNum) {
-         // console.log('pagiNum: ', pagiNum);
-         // return pagiNum;
          this.chosenPagination = pagiNum;
 
+      },
+      paginationRight() {
+         if (this.numFirstVisible + 2 < this.pagiNumbersLength) {
+            this.numFirstVisible++;
+         }
+      },
+      paginationLeft() {
+         if (this.numFirstVisible > 1) {
+            this.numFirstVisible--;
+         }
       }
    }
 
